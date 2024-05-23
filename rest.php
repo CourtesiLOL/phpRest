@@ -47,7 +47,7 @@ function getllibres() {
     $pass = $jsons['pass'];
 
     // Recullo l'isbn si me l'han passat
-    $isbne = isset($_POST['is']) ? $_POST['is'] : 0;
+    $isbne = isset($_GET['is']) ? $_GET['is'] : 0;
 
     if ($user == 'admin') {
         // Connexió a mysql
@@ -55,13 +55,6 @@ function getllibres() {
         if (!$mysql) {
             header('HTTP/1.1 510 Not Extended');
             echo json_encode(["Error" => "No se puede establecer la conexión a la base de datos"]);
-            return;
-        }
-
-        $selected = mysqli_select_db($mysql, "webbooks");
-        if (!$selected) {
-            header('HTTP/1.1 510 Not Extended');
-            echo json_encode(["Error" => "No se puede seleccionar la base de datos"]);
             return;
         }
 
@@ -73,24 +66,20 @@ function getllibres() {
             return;
         }
 
-        $numresults = mysqli_num_rows($result);
         $sort = '';
 
-        for ($i = 0; $i < $numresults; $i++) {
-            $row = mysqli_fetch_assoc($result);
-            if ($row) {
-                $isbn = isset($row['isbn']) ? html_entity_decode($row['isbn']) : '';
-                $autor = isset($row['autor']) ? html_entity_decode($row['autor']) : '';
-                $titol = isset($row['titol']) ? html_entity_decode($row['titol']) : '';
-                $preu = isset($row['preu']) ? html_entity_decode($row['preu']) : '';
-                $sort .= '<tr>';
-                if ($isbn != $isbne) {
-                    $sort .= '<td><input type="text" name="ide" disabled="disabled" value="' . $isbn . '"></td><td><input type="text" name="nom" value="' . $autor . '"></td><td><input type="text" name="adreca" value="' . $titol . '"></td><td><input type="text" name="ciutat" value="' . $preu . '"></td><td><input type="checkbox"></td></tr>';
-                } else {
-                    $sort .= '<td><input type="text" name="ide" disabled="disabled" value="' . $isbn . '" class="groc"></td><td><input type="text" name="nom" value="' . $autor . '" class="groc"></td><td><input type="text" name="adreca" value="' . $titol . '" class="groc"></td><td><input type="text" name="ciutat" value="' . $preu . '" class="groc"></td><td><input type="checkbox"></td></tr>';
-                }
-                $sort .= '</tr>';
+        while ($row = mysqli_fetch_assoc($result)) {
+            $isbn = isset($row['isbn']) ? html_entity_decode($row['isbn']) : '';
+            $autor = isset($row['autor']) ? html_entity_decode($row['autor']) : '';
+            $titol = isset($row['titol']) ? html_entity_decode($row['titol']) : '';
+            $preu = isset($row['preu']) ? html_entity_decode($row['preu']) : '';
+            $sort .= '<tr>';
+            if ($isbn != $isbne) {
+                $sort .= '<td><input type="text" name="ide" disabled="disabled" value="' . $isbn . '"></td><td><input type="text" name="nom" value="' . $autor . '"></td><td><input type="text" name="adreca" value="' . $titol . '"></td><td><input type="text" name="ciutat" value="' . $preu . '"></td><td><input type="checkbox"></td></tr>';
+            } else {
+                $sort .= '<td><input type="text" name="ide" disabled="disabled" value="' . $isbn . '" class="groc"></td><td><input type="text" name="nom" value="' . $autor . '" class="groc"></td><td><input type="text" name="adreca" value="' . $titol . '" class="groc"></td><td><input type="text" name="ciutat" value="' . $preu . '" class="groc"></td><td><input type="checkbox"></td></tr>';
             }
+            $sort .= '</tr>';
         }
 
         echo json_encode(["response" => $sort]);
@@ -98,3 +87,4 @@ function getllibres() {
         echo json_encode(["response" => $user]);
     }
 }
+?>
