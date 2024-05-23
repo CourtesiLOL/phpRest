@@ -40,6 +40,7 @@ if (isset($_POST['user'])) {
 
         $(document).ready(function () {
 
+            
             //INTERFICIE CLIENTS - En logar-se si usuari no és l'administrador o cap 
             //mostra les dades de la taula client i credencials
             if (user != 'admin' && user != "") {
@@ -215,7 +216,7 @@ if (isset($_POST['user'])) {
             ////cap llibre i l'isbn si s'invoca despres de la inserció d'un llibre'
             function mostradadesllibres(isbn) {
 
-                var jsonInfo = JSON.stringify({"user": user, "pass": pass});
+                var jsonInfo = JSON.stringify({ "user": user, "pass": pass });
 
                 $.ajax({
                     type: 'GET',
@@ -225,9 +226,8 @@ if (isset($_POST['user'])) {
                         json: jsonInfo,
                         is: isbn // Añadiendo el parámetro 'is' a la URL
                     },
-                    success: function(response) {
+                    success: function (response) {
                         if (response.response) {
-                            console.log(response.response);
                             jQuery('#llibretb').html(response.response);
                             // Puedes actualizar el contenido del DOM aquí si lo necesitas
                             // jQuery('#llibretb').html(response.response);
@@ -236,7 +236,7 @@ if (isset($_POST['user'])) {
                             console.log(response.Error);
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         console.log("Error: " + xhr.responseText);
                     }
                 });
@@ -246,71 +246,74 @@ if (isset($_POST['user'])) {
 
             //Event onclic inserir nous llibres
             $("#idadesl").click(function () {
-                //Primer de tot comprovo que l'isbn no estigui duplicat'
-                //sempre que l'hagin introduit
-
+                console.log("Entra en idadesl click");
                 var isbn = jQuery(':text:eq(0)', '#inllibretb').val();
-                var ce = '0';
+                var ce = '1';
                 if (isbn != '') {
-                    //Si l'atribut és vermell vol dir que l'isbn és incorrecte!!'
-                    //Ho comprovo a partir de l'atribu'
-                    //Mirava d'usar la funció comprovaISBN però crec que anava per un fil a part i fallava!!!!!!!
                     var atr = jQuery("#isbn").attr('class');
                     if (atr == 'none') {
-                        ce = 1;
-                    };
+                        ce = '1';
+                    } else {
+                        ce = '0';
+                    }
                 }
-                //El segon pas serà comprovar que tant autor com títol no s'entren com a nulls'
+
                 var a = jQuery('#autor').val();
                 var t = jQuery('#titol').val();
                 jQuery("#autor").attr('class', 'none');
                 jQuery("#titol").attr('class', 'none');
                 jQuery("#preu").attr('class', 'none');
                 if (a == '') {
-                    ce = '0'; //Condició per no entrar a introduir
+                    ce = '0';
                     jQuery("#autor").attr('class', 'roig');
                 }
                 if (t == '') {
-                    ce = '0'; //Condició per no entrar a introduir
+                    ce = '0';
                     jQuery("#titol").attr('class', 'roig');
                 }
-                //Tercer comprovaré que el preu sigui un nombre
+
                 var p = jQuery('#preu').val();
                 if (isNaN(p)) {
-                    ce = '0'; //Condició per no entrar a introduir
+                    ce = '0';
                     jQuery("#preu").attr('class', 'roig');
                 }
-                //En cas que em retorni exit
-                if (ce == '1') {
-                    //Recullo per jQuery el que he introduit en cada un dels camps del formulari d'inserció'
-                    var isbnj = jQuery(':text:eq(0)', '#inllibretb').val();
-                    var autorj = jQuery(':text:eq(1)', '#inllibretb').val();
-                    var titolj = jQuery(':text:eq(2)', '#inllibretb').val();
-                    var preuj = jQuery(':text:eq(3)', '#inllibretb').val();
 
-                    $.ajax({
-                        type: 'POST',
-                        url: 'idadesl.php',
-                        dataType: 'html',
-                        data: {
-                            usu: user,
-                            pas: pass,
-                            isbn: isbnj,
-                            autor: autorj,
-                            titol: titolj,
-                            preu: preuj
-                        },
-                        success: function (suc) {
-                            alert(suc);
-                        },
-                        error: function () { alert('An error occurred!'); }
-                    });
-                    //Ara ja mostro les dades dels llibres amb el nou llibre inserit 1 
-                    //segon més tard esborrant primer els que hi havia
-                    jQuery('#llibretb').html('');
-                    var t = setTimeout(function () { mostradadesllibres(isbnj); }, 2000);
-                }
+
+                var isbnj = jQuery(':text:eq(0)', '#inllibretb').val();
+                var autorj = jQuery(':text:eq(1)', '#inllibretb').val();
+                var titolj = jQuery(':text:eq(2)', '#inllibretb').val();
+                var preuj = jQuery(':text:eq(3)', '#inllibretb').val();
+                console.log(isbnj);
+                console.log(autorj);
+                console.log(titolj);
+                console.log(preuj);
+
+                $.ajax({
+                    type: 'PUT',
+                    url: 'rest.php',
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        usu: user,
+                        pas: pass,
+                        isbn: isbnj,
+                        autor: autorj,
+                        titol: titolj,
+                        preu: preuj
+                    }),
+                    success: function (suc) {
+                        alert(suc["Resposta"]);
+                    },
+                    error: function () {
+                        alert('An error occurred!');
+                    }
+                });
+
+                jQuery('#llibretb').html('');
+                var t = setTimeout(function () { mostradadesllibres(isbnj); }, 2000);
+                
             });
+
 
 
             //Event per a que quan es perdi el focus de l'isbn aquest comprobi que aquest no està duplicat'

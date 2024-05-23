@@ -54,4 +54,4 @@ if ($user == 'admin'){
     echo $jsonsRespostaErr;
 }
 
-
+?>
