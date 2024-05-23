@@ -6,7 +6,7 @@ function loginForm(){
 	<form action="index.php" method="post">
 		<p><strong>Introdueix usuari i contrassenya per continuar:</strong></p>
 		<label for="name">User: </label>
-		<input type="text" name="user" id="name" /> 
+		<input type="text" name="user" id="user" /> 
                 <label for="name">Pass: </label>
                 <input type="text" name="pass" id="pass" /> 
 		<input type="submit" name="enter" id="enter" value="Enter" />
@@ -32,8 +32,8 @@ if(isset($_POST['user'])){
     
         //Definire les dues variables globals que usaré per saber quin usuari és el que fa AJAX 
         //i que redefiniré cada vegada que es logui un usuari
-        var user="";
-        var pass="";
+        var user="admin";
+        var pass="1111";
 
         $(document).ready(function(){
                 
@@ -42,6 +42,8 @@ if(isset($_POST['user'])){
                 if (user != 'admin' && user !="") {
                     mostraDadesClientCredencials();
                 }
+                console.log(user)
+                console.log(pass)
 
                 //Si l'usuari vol tancar la sessió
                 $("#exit").click(function(){
@@ -209,22 +211,25 @@ if(isset($_POST['user'])){
                 //Funció que mostra les dades dels llibres el parametre passa 0 si s'invoca sense inserir 
                 ////cap llibre i l'isbn si s'invoca despres de la inserció d'un llibre'
                 function mostradadesllibres(isbn){
+
                     var jsonInfo = JSON.parse('{"user":"' + user + '","pass":"' + pass + '"}');
                     $.ajax({
-                                    type: 'POST',
-                                    url:  'mdadesl.php',
+                                    type: 'GET',
+                                    url:  'rest.php',
                                     dataType: 'json',
-                                    data: JSON.strinstringify(jsonInfo),
+                                    data: {json:jsonInfo},
                                     success: function(suc) {
-                                        jQuery('#llibretb').html(suc);
+                                        console.log(suc["response"])
+                                        //alert(suc["response"])
+                                        //jQuery('#llibretb').html(suc);
                                     },
-                                    error: function() {alert('An error occurred!');}
+                                    error: function(suc) {
+                                        console.log(suc["Error"]);
+                                    }
                     });
                 }
 
-                function addDadesLlibres(){
-                    
-                }
+
                 
                 //Event onclic inserir nous llibres
                 $("#idadesl").click(function(){ 
@@ -594,11 +599,11 @@ if(!isset($_POST['user']) || !isset($_POST['pass']) || isset($_GET['error']) || 
             }else{
                 echo '<span class="error">Siusplau introdueix usuari i contrassenya</span>';
             }
+            
             loginForm();
 }
 else{
     //Aquest és el cas en que ha posat usuari i passord ---> Això fora de l'IF || (!isset($_POST['pass']) || $_POST['pass'] != "pass")!!!
-    
     //Connexió a mysql
     $mysql = mysqli_connect("localhost", "bookusers","bookusers", "webbooks");
     if(!$mysql){
