@@ -362,8 +362,8 @@ if (isset($_POST['user'])) {
                         //Vaig posant a dins d'un array les posicions ticades'
                         //Els isbns dels llibres a esborrar
                         //alert("ticat: "+i+" poscion array: "+c);
-                        var is = jQuery('#llibretb tr:eq(' + i + ') input:eq(0)').val();
-                        arr[c] = is;
+                        var isbn = jQuery('#llibretb tr:eq(' + i + ') input:eq(0)').val();
+                        arr[c] = isbn;
                         c = c + 1;
                     }
                 }
@@ -373,21 +373,21 @@ if (isset($_POST['user'])) {
                 for (var c = 0; c < arr.length; c++) {
                     var isb = arr[c];
                     $.ajax({
-                        type: 'POST',
-                        url: 'edadesl.php',
-                        dataType: 'html',
-                        data: {
-                            usu: user,
-                            pas: pass,
+                        type: 'DELETE',
+                        url: 'rest.php',
+                        dataType: 'json',
+                        data: JSON.stringify({
+                            user: user,
+                            pass: pass,
                             isbn: isb
-                        },
+                        }),
                         success: function (suc) {
                             //Trec l'isbn del llibre esborrat
-                            alert(suc);
+                            alert(suc["resposta"]);
                             //Actualitzo la llista dels llibres usant la funció
                             mostradadesllibres(0);
                         },
-                        error: function () { alert('An error occurred!'); }
+                        error: function (suc) { alert(suc["Error"]); }
                     });
 
                 }

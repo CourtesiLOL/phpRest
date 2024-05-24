@@ -15,7 +15,7 @@ switch ($peticion) {
         putllibres();
         break;
     case "DELETE":
-        echo json_encode(["response" => "El número no es 1, 2 o 3"]);
+        deletellibres();
         break;
     default:
         header('HTTP/1.1 405 Method Not Allowed');
@@ -131,7 +131,7 @@ function postllibres()
         // Prepara la consulta UPDATE
         $query = "UPDATE llibre SET isbn = '$isbnNuevo', autor = '$autor', titol = '$titol', preu = '$preu' WHERE llibre.isbn = '$isbnViejo'";
         $stmt = mysqli_prepare($mysql, $query);
-        if (!$stmt) {   
+        if (!$stmt) {
             header('HTTP/1.1 500 Internal Server Error');
             echo json_encode(["Error" => "Fallo al preparar la consulta"]);
             mysqli_close($mysql);
@@ -216,6 +216,83 @@ function putllibres()
         echo $jsonsRespostaOk;
     } else {
         echo $jsonsRespostaErr;
+    }
+}
+
+function deletellibres()
+{
+    // Lee el cuerpo de la solicitud
+    $input = file_get_contents('php://input');
+    $jsons = json_decode($input, true);
+
+    // Verifica si se recibieron los parámetros necesarios
+    if (!isset($jsons['user']) || !isset($jsons['pass'])) {
+        header('HTTP/1.1 400 Bad Request');
+        echo json_encode(["Error" => "Faltan parámetros 'user' o 'pass'"]);
+        return;
+    }
+
+    // Verifica si el parámetro 'is' está presente en la URL
+    if (!isset($jsons['isbn'])) {
+        header('HTTP/1.1 400 Bad Request');
+        echo json_encode(["Error" => "Falta parámetro 'isbn' en la URL"]);
+        return;
+    }
+
+    $user = htmlspecialchars($jsons['user']);
+    $pass = htmlspecialchars($jsons['pass']);
+    $isbne = htmlspecialchars($jsons['isbn']);
+
+    // Si el usuario es administrador
+    if ($user == 'admin' && $pass == '1111') { // Mejora: Usar un sistema de autenticación adecuado
+
+        // Conexión a MySQL
+        $mysql = mysqli_connect("localhost", "bookadmin", "1111", "webbooks");
+        if (!$mysql) {
+            header('HTTP/1.1 500 Internal Server Error');
+            $err = 'Error interno. No se puede establecer la conexión. Inténtelo de nuevo más tarde';
+            echo json_encode(["Error" => $err]);
+            return;
+        }
+
+        // Prepara la consulta DELETE usando una consulta preparada
+        $query = "DELETE FROM llibre WHERE isbn = ?";
+        $stmt = mysqli_prepare($mysql, $query);
+        if (!$stmt) {
+            header('HTTP/1.1 500 Internal Server Error');
+            $err = 'Error interno. No se puede preparar la consulta. Inténtelo de nuevo más tarde';
+            echo json_encode(["Error" => $err]);
+            mysqli_close($mysql);
+            return;
+        }
+
+        // Enlaza el parámetro a la consulta
+        mysqli_stmt_bind_param($stmt, "s", $isbne);
+
+        // Ejecuta la consulta
+        if (!mysqli_stmt_execute($stmt)) {
+            header('HTTP/1.1 500 Internal Server Error');
+            $err = 'Error interno. No se puede ejecutar la consulta. Inténtelo de nuevo más tarde';
+            echo json_encode(["Error" => $err]);
+            mysqli_stmt_close($stmt);
+            mysqli_close($mysql);
+            return;
+        }
+
+        // Verifica si se eliminó algún registro
+        if (mysqli_stmt_affected_rows($stmt) > 0) {
+            header('HTTP/1.1 200 OK');
+            echo json_encode(["resposta" => "ok"]);
+        } else {
+            header('HTTP/1.1 404 Not Found');
+            echo json_encode(["Error" => "No se encontró ningún libro con el ISBN especificado"]);
+        }
+
+        mysqli_stmt_close($stmt);
+        mysqli_close($mysql);
+    } else {
+        header('HTTP/1.1 403 Forbidden');
+        echo json_encode(["Error" => "Acceso denegado. Funcionalidad para otros usuarios será implementada próximamente"]);
     }
 }
 
