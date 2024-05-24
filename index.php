@@ -40,7 +40,7 @@ if (isset($_POST['user'])) {
 
         $(document).ready(function () {
 
-            
+
             //INTERFICIE CLIENTS - En logar-se si usuari no és l'administrador o cap 
             //mostra les dades de la taula client i credencials
             if (user != 'admin' && user != "") {
@@ -129,42 +129,41 @@ if (isset($_POST['user'])) {
             //Event onclic actualitza dades clients
             $("#adadesc").click(function () {
                 alert('actualitzadades client');
-                //Primer poso en un array cada un dels que tinc que actualitzar
-                var arr = new Array();
+                // Primero coloco en un array cada uno de los que tengo que actualizar
+                var arr = [];
                 var c = 0;
                 var n = jQuery('#clienttb input:checkbox').length;
 
                 for (var i = 0; i < n; i++) {
                     if (jQuery('#clienttb input:checkbox:eq(' + i + ')').is(':checked')) {
-                        //Vaig posant a dins d'un array les el numero de fila ticada'
+                        // Voy poniendo dentro de un array el número de fila marcada
                         alert("ticat: " + i + " poscion array: " + c);
                         arr[c] = i;
                         c = c + 1;
                     }
                 }
 
-                //Fent Ajax aconsegueixo que me'ls actualitzi un a un
-                //a partir de la posició de fila ticada multiplicada per 4 que són els td's'
+                // Haciendo Ajax consigo que los actualice uno a uno
+                // a partir de la posición de fila marcada multiplicada por 4 que son los td's
                 for (var i = 0; i < arr.length; i++) {
                     var mult = arr[i] * 4;
-                    alert(mult);
-                    alert(arr.length);
                     var a = 0 + parseInt(mult);
                     var b = 1 + parseInt(mult);
                     var c = 2 + parseInt(mult);
                     var d = 3 + parseInt(mult);
-                    //Recullo per jQuery el que he introduit en cada un dels camps del formulari d'inserció'
+                    // Recojo por jQuery lo que he introducido en cada uno de los campos del formulario de inserción
                     var id = jQuery(':text:eq(' + a + ')', '#clienttb').val();
                     var nom = jQuery(':text:eq(' + b + ')', '#clienttb').val();
                     var adreca = jQuery(':text:eq(' + c + ')', '#clienttb').val();
                     var ciutat = jQuery(':text:eq(' + d + ')', '#clienttb').val();
-                    alert(id + " " + nom + " " + adreca + " " + ciutat);
 
-                    //Li passo les 4 dades perque no puc saber quina es la que tinc que actualitzar.
+
+
+                    // Paso los 4 datos porque no puedo saber cuál es el que tengo que actualizar.
                     $.ajax({
                         type: 'POST',
-                        url: 'adadesc.php',
-                        dataType: 'html',
+                        url: 'rest.php',
+                        dataType: 'json',
                         data: {
                             usu: user,
                             pas: pass,
@@ -173,18 +172,19 @@ if (isset($_POST['user'])) {
                             adrecap: adreca,
                             ciutatp: ciutat
                         },
-                        success: function (suc) {
-                            //Trec l'isbn del llibre esborrat
-                            alert(suc);
-                            //Actualitzo la llista dels llibres usant la funció
-                            //mostradadesllibres(0);
+                        success: function (response) {
+                            // Quito el ISBN del libro borrado
+                            alert(response.response);
+                            // Actualizo la lista de libros usando la función
+                            // mostradadesllibres(0);
                         },
-                        error: function () { alert('An error occurred!'); }
+                        error: function (xhr, status, error) {
+                            alert('An error occurred: ' + xhr.responseText);
+                        }
                     });
-
                 }
-
             });
+
 
             //Event onclic mostra dades clients
             $("#mdadesc").click(function () {
@@ -311,7 +311,7 @@ if (isset($_POST['user'])) {
 
                 jQuery('#llibretb').html('');
                 var t = setTimeout(function () { mostradadesllibres(isbnj); }, 2000);
-                
+
             });
 
 
@@ -397,7 +397,6 @@ if (isset($_POST['user'])) {
 
             //Event onclic mostra dades dels llibres
             $("#adadesl").click(function () {
-                alert('actualitzadades');
                 //Primer poso en un array cada un dels que tinc que actualitzar
                 var arr = new Array();
                 var c = 0;
@@ -416,39 +415,48 @@ if (isset($_POST['user'])) {
                 //a partir de la posició de fila ticada multiplicada per 4 que són els td's'
                 for (var i = 0; i < arr.length; i++) {
                     var mult = arr[i] * 4;
-                    alert(mult);
-                    alert(arr.length);
                     var a = 0 + parseInt(mult);
                     var b = 1 + parseInt(mult);
                     var c = 2 + parseInt(mult);
                     var d = 3 + parseInt(mult);
                     //Recullo per jQuery el que he introduit en cada un dels camps del formulari d'inserció'
-                    var isbnj = jQuery(':text:eq(' + a + ')', '#llibretb').val();
-                    var autorj = jQuery(':text:eq(' + b + ')', '#llibretb').val();
-                    var titolj = jQuery(':text:eq(' + c + ')', '#llibretb').val();
-                    var preuj = jQuery(':text:eq(' + d + ')', '#llibretb').val();
+                    var isbnjViejo = jQuery(':text:eq(' + a + ')', '#llibretb').val();
+                    var isbnjNuevo = document.querySelector("#isbn").value;
+                    var autorj = document.querySelector("#autor").value;
+                    var titolj = document.querySelector("#titol").value;
+                    var preuj = document.querySelector("#preu").value;
 
+                    console.log("user: "+user)
+                    console.log("pass: "+pass)
+                    console.log("isbnjViejo: "+isbnjViejo)
+                    console.log("isbnjNuevo: "+isbnjNuevo)
+                    console.log("autorj: "+autorj)
+                    console.log("titolj: "+titolj)
+                    console.log("preuj: "+preuj)
 
                     //Li passo les 4 dades perque no puc saber quina es la que tinc que actualitzar.
                     $.ajax({
                         type: 'POST',
-                        url: 'adadesl.php',
-                        dataType: 'html',
-                        data: {
-                            usu: user,
-                            pas: pass,
-                            isbn: isbnj,
+                        url: 'rest.php',
+                        dataType: 'json',
+                        contentType: 'application/json', // Especifica el tipo de contenido
+                        data: JSON.stringify({
+                            user: user,
+                            pass: pass,
+                            isbnViejo: isbnjViejo,
+                            isbnNuevo: isbnjNuevo,
                             autor: autorj,
                             titol: titolj,
                             preu: preuj
-                        },
+                        }),
                         success: function (suc) {
                             //Trec l'isbn del llibre esborrat
-                            alert(suc);
+                            alert(suc["response"]);
+
                             //Actualitzo la llista dels llibres usant la funció
                             //mostradadesllibres(0);
                         },
-                        error: function () { alert('An error occurred!'); }
+                        error: function (suc) { alert(suc["Error"]); }
                     });
 
                 }
